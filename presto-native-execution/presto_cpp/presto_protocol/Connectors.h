@@ -40,6 +40,9 @@ void registerHiveConnectors();
 // Register the Tpch connector.
 void registerTpchConnector();
 
+// Register the System connector.
+void registerSystemConnector();
+
 bool registerConnector(
     const std::string& connectorName,
     const std::string& connectorKey);

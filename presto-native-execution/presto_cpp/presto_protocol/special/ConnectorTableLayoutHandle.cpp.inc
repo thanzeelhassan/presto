@@ -28,6 +28,11 @@ void to_json(json& j, const std::shared_ptr<ConnectorTableLayoutHandle>& p) {
     return;
   }
 
+  if (getConnectorKey(type) == "$system") {
+    j = *std::static_pointer_cast<SystemTableLayoutHandle>(p);
+    return;
+  }
+
   throw TypeError(type + " no abstract type ConnectorTableLayoutHandle");
 }
 
@@ -50,6 +55,13 @@ void from_json(const json& j, std::shared_ptr<ConnectorTableLayoutHandle>& p) {
 
   if (getConnectorKey(type) == "tpch") {
     auto k = std::make_shared<TpchTableLayoutHandle>();
+    j.get_to(*k);
+    p = k;
+    return;
+  }
+
+  if (getConnectorKey(type) == "$system") {
+    auto k = std::make_shared<SystemTableLayoutHandle>();
     j.get_to(*k);
     p = k;
     return;

@@ -48,6 +48,12 @@ void registerTpchConnector() {
   registerConnector("tpch", "tpch");
 }
 
+void registerSystemConnector() {
+  registerConnector("$system", "$system");
+  registerConnector("system", "$system");
+  registerConnector("$system@system", "$system");
+}
+
 const std::string& getConnectorKey(const std::string& connectorName) {
   auto it = connectors().find(connectorName);
   VELOX_CHECK(

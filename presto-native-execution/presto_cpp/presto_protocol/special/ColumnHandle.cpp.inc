@@ -28,6 +28,11 @@ void to_json(json& j, const std::shared_ptr<ColumnHandle>& p) {
     return;
   }
 
+  if (getConnectorKey(type) == "$system") {
+    j = *std::static_pointer_cast<SystemColumnHandle>(p);
+    return;
+  }
+
   throw TypeError(type + " no abstract type ColumnHandle ");
 }
 
@@ -48,6 +53,14 @@ void from_json(const json& j, std::shared_ptr<ColumnHandle>& p) {
 
   if (getConnectorKey(type) == "tpch") {
     std::shared_ptr<TpchColumnHandle> k = std::make_shared<TpchColumnHandle>();
+    j.get_to(*k);
+    p = std::static_pointer_cast<ColumnHandle>(k);
+    return;
+  }
+
+  if (getConnectorKey(type) == "$system") {
+    std::shared_ptr<SystemColumnHandle> k =
+        std::make_shared<SystemColumnHandle>();
     j.get_to(*k);
     p = std::static_pointer_cast<ColumnHandle>(k);
     return;

@@ -36,6 +36,11 @@ void to_json(json& j, const std::shared_ptr<ConnectorSplit>& p) {
     return;
   }
 
+  if (getConnectorKey(type) == "$system") {
+    j = *std::static_pointer_cast<SystemSplit>(p);
+    return;
+  }
+
   throw TypeError(type + " no abstract type ConnectorSplit");
 }
 
@@ -68,6 +73,13 @@ void from_json(const json& j, std::shared_ptr<ConnectorSplit>& p) {
 
   if (getConnectorKey(type) == "tpch") {
     auto k = std::make_shared<TpchSplit>();
+    j.get_to(*k);
+    p = k;
+    return;
+  }
+
+  if (getConnectorKey(type) == "$system") {
+    auto k = std::make_shared<SystemSplit>();
     j.get_to(*k);
     p = k;
     return;

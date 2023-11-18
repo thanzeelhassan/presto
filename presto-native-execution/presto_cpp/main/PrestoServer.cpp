@@ -21,6 +21,7 @@
 #include "presto_cpp/main/Announcer.h"
 #include "presto_cpp/main/PeriodicTaskManager.h"
 #include "presto_cpp/main/SignalHandler.h"
+#include "presto_cpp/main/SystemConnector.h"
 #include "presto_cpp/main/TaskResource.h"
 #include "presto_cpp/main/common/ConfigReader.h"
 #include "presto_cpp/main/common/Configs.h"
@@ -196,6 +197,7 @@ void PrestoServer::run() {
   registerCustomOperators();
   protocol::registerHiveConnectors();
   protocol::registerTpchConnector();
+  protocol::registerSystemConnector();
 
   initializeVeloxMemory();
   initializeThreadPools();
@@ -341,6 +343,17 @@ void PrestoServer::run() {
   pool_ = velox::memory::addDefaultLeafMemoryPool();
   taskManager_ = std::make_unique<TaskManager>(
       driverExecutor_.get(), httpSrvCpuExecutor_.get(), spillerExecutor_.get());
+
+  PRESTO_STARTUP_LOG(INFO) << "Registering system catalog "
+                           << " using connector SystemConnector";
+  auto systemConnector = std::dynamic_pointer_cast<SystemConnector>(
+      facebook::velox::connector::getConnectorFactory("$system")->newConnector(
+          "$system@system",
+          std::move(std::make_shared<const velox::core::MemConfig>()),
+          connectorIoExecutor_.get()));
+  VELOX_CHECK(systemConnector);
+  systemConnector->setTaskManager(taskManager_.get());
+  velox::connector::registerConnector(systemConnector);
 
   std::string taskUri;
   if (httpsPort.has_value()) {
@@ -758,6 +771,7 @@ std::vector<std::string> PrestoServer::registerConnectors(
       velox::connector::registerConnector(connector);
     }
   }
+
   return catalogNames;
 }
 

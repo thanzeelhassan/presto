@@ -1337,6 +1337,11 @@ public abstract class AbstractTestNativeGeneralQueries
         }
     }
 
+    @Test
+    public void testTaskTable() {
+        assertQueryResultCount("select * from system.runtime.tasks limit 2", 2);
+    }
+
     private void assertQueryResultCount(String sql, int expectedResultCount)
     {
         assertEquals(getQueryRunner().execute(sql).getRowCount(), expectedResultCount);

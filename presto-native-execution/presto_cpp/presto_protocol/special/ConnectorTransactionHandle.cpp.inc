@@ -33,6 +33,10 @@ void to_json(json& j, const std::shared_ptr<ConnectorTransactionHandle>& p) {
     j = *std::static_pointer_cast<TpchTransactionHandle>(p);
     return;
   }
+  if (getConnectorKey(type) == "$system") {
+    j = *std::static_pointer_cast<SystemTransactionHandle>(p);
+    return;
+  }
 
   throw TypeError(type + " no abstract type ConnectorTransactionHandle");
 }
@@ -66,6 +70,12 @@ void from_json(const json& j, std::shared_ptr<ConnectorTransactionHandle>& p) {
   }
   if (getConnectorKey(type) == "tpch") {
     auto k = std::make_shared<TpchTransactionHandle>();
+    j.get_to(*k);
+    p = k;
+    return;
+  }
+  if (getConnectorKey(type) == "$system") {
+    auto k = std::make_shared<SystemTransactionHandle>();
     j.get_to(*k);
     p = k;
     return;

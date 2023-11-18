@@ -12,7 +12,9 @@
  * limitations under the License.
  */
 #include "presto_cpp/main/types/PrestoToVeloxSplit.h"
+
 #include <optional>
+#include "presto_cpp/main/SystemSplit.h"
 #include "velox/connectors/hive/HiveConnectorSplit.h"
 #include "velox/connectors/tpch/TpchConnectorSplit.h"
 #include "velox/exec/Exchange.h"
@@ -110,6 +112,15 @@ velox::exec::Split toVeloxSplit(
   if (std::dynamic_pointer_cast<const protocol::EmptySplit>(connectorSplit)) {
     // We return NULL for empty splits to signal to do nothing.
     return velox::exec::Split(nullptr, splitGroupId);
+  }
+  if (auto systemSplit = std::dynamic_pointer_cast<const protocol::SystemSplit>(
+          connectorSplit)) {
+    return velox::exec::Split(
+        std::make_shared<SystemSplit>(
+            scheduledSplit.split.connectorId,
+            systemSplit->tableHandle.schemaName,
+            systemSplit->tableHandle.tableName),
+        splitGroupId);
   }
 
   VELOX_CHECK(false, "Unknown split type {}", connectorSplit->_type);
